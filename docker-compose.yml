@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # 1. Primary Database (PostgreSQL)
+  postgres:
+    image: postgres:16-alpine
+    container_name: f1_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - f1_network
+
+  # 2. Database GUI (pgAdmin) - Optional but helpful
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: f1_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - f1_network
+
+  # 3. Cache (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: f1_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - f1_network
+
+  # 4. Message Queue (RabbitMQ)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: f1_rabbitmq
+    ports:
+      - "5672:5672"   # Main port
+      - "15672:15672" # Management UI
+    networks:
+      - f1_network
+
+volumes:
+  postgres_data:
+
+networks:
+  f1_network:
