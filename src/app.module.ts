@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { DriversModule } from './drivers/drivers.module';
 import { RacesModule } from './races/races.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
+import { IngestionModule } from './ingestion/ingestion.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     DriversModule,
     RacesModule,
     TelemetryModule,
+    IngestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,7 +5,7 @@ import { UpdateTelemetryDto } from './dto/update-telemetry.dto';
 
 @Controller('telemetry')
 export class TelemetryController {
-  constructor(private readonly telemetryService: TelemetryService) {}
+  constructor(private readonly telemetryService: TelemetryService) { }
 
   @Post()
   create(@Body() createTelemetryDto: CreateTelemetryDto) {

@@ -8,5 +8,6 @@ import { Telemetry } from './entities/telemetry.entity';
   imports: [TypeOrmModule.forFeature([Telemetry])],
   controllers: [TelemetryController],
   providers: [TelemetryService],
+  exports: [TelemetryService],
 })
-export class TelemetryModule {}
+export class TelemetryModule { }
