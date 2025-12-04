@@ -1,11 +1,14 @@
 import { CreateTelemetryDto } from './dto/create-telemetry.dto';
 import { UpdateTelemetryDto } from './dto/update-telemetry.dto';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Telemetry } from './entities/telemetry.entity';
 import { Driver } from '../drivers/entities/driver.entity';
 import { Race } from '../races/entities/race.entity';
+import { TelemetryGateway } from './telemetry/telemetry.gateway';
+import * as cacheManager_1 from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class TelemetryService {
@@ -13,6 +16,8 @@ export class TelemetryService {
   constructor(
     @InjectRepository(Telemetry)
     private telemetryRepository: Repository<Telemetry>,
+    private readonly telemetryGateway: TelemetryGateway,
+    @Inject(CACHE_MANAGER) private cacheManager:cacheManager_1.Cache,
   ) {}
 
   async batchCreate(data: any[]) {
@@ -36,6 +41,21 @@ export class TelemetryService {
     await this.telemetryRepository.save(entities);
     
     this.logger.log(`💾 Saved ${entities.length} telemetry points to DB`);
+
+    this.telemetryGateway.broadcastTelemetry(entities);
+    this.logger.log(`📡 Broadcasted updates to clients`);
+    const latestData = entities[entities.length - 1];
+    await this.cacheManager.set('driver:1:latest', latestData, 0);
+    this.logger.log(`💾 Cached latest telemetry point`);
+
+  }
+  async getLatestTelemetry(driverId: number) {
+    const cachedData = await this.cacheManager.get(`driver:1:latest`); // Hardcoded 1 for now
+    if (cachedData) {
+      this.logger.log('⚡ Fetched data from Redis Cache');
+      return cachedData;
+    }
+    return null;
   }
   create(createTelemetryDto: CreateTelemetryDto) {
     return 'This action adds a new telemetry';

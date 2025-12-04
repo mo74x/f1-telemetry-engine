@@ -31,4 +31,9 @@ export class TelemetryController {
   remove(@Param('id') id: string) {
     return this.telemetryService.remove(+id);
   }
+  
+  @Get('latest/:driverId')
+  async getLatest(@Param('driverId') driverId: string) {
+    return this.telemetryService.getLatestTelemetry(+driverId);
+  }
 }

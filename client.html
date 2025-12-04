@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PitWall Live Telemetry</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        .stat { font-size: 24px; margin-bottom: 10px; }
+        .dashboard { border: 1px solid #333; padding: 20px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>🏎️ PitWall Live Telemetry</h1>
+    <div class="dashboard">
+        <div class="stat">Driver: Max Verstappen</div>
+        <div class="stat">Speed: <span id="speed">0</span> km/h</div>
+        <div class="stat">Throttle: <span id="throttle">0</span> %</div>
+        <div class="stat">Brake: <span id="brake">0</span> %</div>
+        <div class="stat">Gear: <span id="gear">N</span></div>
+    </div>
+
+    <script>
+        // Connect to our NestJS WebSocket Gateway on Port 3001
+        const socket = io('http://localhost:3001');
+
+        socket.on('connect', () => {
+            console.log('✅ Connected to PitWall Server');
+        });
+
+        // Listen for the 'live_update' event
+        socket.on('live_update', (data) => {
+            console.log('Received Data:', data);
+            
+            // Take the last data point in the batch (most recent)
+            const latest = data[data.length - 1];
+
+            if (latest) {
+                document.getElementById('speed').innerText = latest.speed;
+                document.getElementById('throttle').innerText = latest.throttle;
+                document.getElementById('brake').innerText = latest.brake;
+                document.getElementById('gear').innerText = latest.gear;
+            }
+        });
+    </script>
+</body>
+</html>
