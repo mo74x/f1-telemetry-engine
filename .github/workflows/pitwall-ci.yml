@@ -1,0 +1,48 @@
+name: PitWall CI Pipeline
+
+# Trigger: Run on every push to 'main' or when a Pull Request is opened
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x] # Test on Node 18 and 20 to ensure compatibility
+
+    steps:
+    # 1. Check out your code from the repo
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. Setup Node.js environment
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm' # This speeds up the next step significantly!
+
+    # 3. Install Dependencies (Clean Install)
+    - name: Install Dependencies
+      run: npm ci 
+      # 'npm ci' is strictly for CI/CD. It follows package-lock.json exactly.
+
+    # 4. Linting (Code Style Check)
+    - name: Lint Code
+      run: npm run lint
+      # Fails if you left unused variables or messy formatting.
+
+    # 5. Build (TypeScript Compiler Check)
+    - name: Build Application
+      run: npm run build
+      # Fails if there are TypeScript errors (e.g., passing string to number function).
+
+    # 6. Run Unit Tests
+    - name: Run Unit Tests
+      run: npm run test
+      # Fails if any logic is broken.
